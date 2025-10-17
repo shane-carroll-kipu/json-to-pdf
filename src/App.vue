@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container no-print">
     <div class="header">
       <h1>JSON to PDF Converter</h1>
       <p>Upload your structured JSON file and convert it to a beautiful PDF document</p>
@@ -69,14 +69,20 @@
       <div class="pdf-content" v-html="pdfPreview"></div>
     </div>
   </div>
+  
+  <!-- Hidden PDF template for printing -->
+  <PdfTemplate v-if="patientData" :patientData="patientData" />
 </template>
 
 <script>
 import { ref } from 'vue'
-import { generateMedicalRecordPDF } from './pdfGenerator.js'
+import PdfTemplate from './components/PdfTemplate.vue'
 
 export default {
   name: 'App',
+  components: {
+    PdfTemplate
+  },
   setup() {
     const selectedFile = ref(null)
     const isDragOver = ref(false)
@@ -85,6 +91,7 @@ export default {
     const success = ref('')
     const pdfPreview = ref('')
     const fileInput = ref(null)
+    const patientData = ref(null)
 
     // Removed programmatic click to avoid double-open behavior
     const triggerFileInput = () => {}
@@ -155,38 +162,33 @@ export default {
         const text = await selectedFile.value.text()
         const jsonData = JSON.parse(text)
         
+        // Set patient data to render the PDF template
+        patientData.value = jsonData.data
+        
         // Generate a simple preview
         const patientName = jsonData.data?.attributes?.demographics?.name || {}
         const previewHTML = `
           <div style="font-family: Arial, sans-serif; padding: 20px; background: white;">
-            <h1 style="color: #333;">PDF Generation Preview</h1>
+            <h1 style="color: #333;">PDF Generation Ready</h1>
             <p>Patient: ${patientName.first_name || 'Unknown'} ${patientName.last_name || ''}</p>
             <p>Medical Record: ${jsonData.data?.attributes?.identifiers?.medical_record_number || 'N/A'}</p>
             <p>Date: ${new Date().toLocaleString()}</p>
-            <p style="color: #666; font-style: italic;">PDF will be generated using pdfmake for professional formatting...</p>
+            <p style="color: #2563eb; font-weight: bold;">Browser print dialog will open - use "Save as PDF" to generate your document.</p>
           </div>
         `
         pdfPreview.value = previewHTML
 
-        // Generate PDF using pdfmake
+        // Wait a moment for Vue to render the PDF template
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        // Trigger print dialog
         const startTime = Date.now()
-        const pdfBlob = await generateMedicalRecordPDF(jsonData.data)
+        window.print()
         const endTime = Date.now()
         
-        console.log(`PDF generation took ${endTime - startTime}ms`)
+        console.log(`Print dialog opened in ${endTime - startTime}ms`)
 
-        // Download PDF
-        const fileName = selectedFile.value.name.replace('.json', '') + '_medical_record.pdf'
-        const url = URL.createObjectURL(pdfBlob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = fileName
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-
-        success.value = `PDF generated successfully in ${endTime - startTime}ms!`
+        success.value = `PDF template ready! Use the print dialog to save as PDF.`
         
       } catch (err) {
         error.value = `Error converting file: ${err.message}`
@@ -205,6 +207,7 @@ export default {
       success,
       pdfPreview,
       fileInput,
+      patientData,
       triggerFileInput,
       handleDragOver,
       handleDragLeave,

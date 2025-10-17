@@ -1,0 +1,461 @@
+/**
+ * Print-specific styles for PDF generation
+ * Includes @page rules for dynamic section headers
+ */
+
+/* Base page settings */
+@page {
+  size: A4;
+  margin: 1in 0.5in;
+}
+
+/* Print-only container */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .pdf-container {
+    display: block;
+    width: 100%;
+    background: white;
+  }
+  
+  /* Hide non-PDF content when printing */
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Screen view - hide PDF template by default */
+@media screen {
+  .pdf-container {
+    display: none;
+  }
+  
+  /* When in print preview mode, show it */
+  .pdf-container.preview-mode {
+    display: block;
+    max-width: 8.5in;
+    margin: 20px auto;
+    padding: 1in 0.5in;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+}
+
+/* Typography */
+.pdf-container {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.4;
+  color: #000;
+}
+
+/* Headers and Titles */
+.section-title {
+  font-size: 16pt;
+  font-weight: bold;
+  color: #1a202c;
+  margin: 20pt 0 12pt 0;
+  padding-bottom: 4pt;
+  border-bottom: 2pt solid #4a5568;
+  page-break-after: avoid;
+}
+
+.subsection-title {
+  font-size: 13pt;
+  font-weight: bold;
+  color: #2d3748;
+  margin: 16pt 0 10pt 0;
+  page-break-after: avoid;
+}
+
+/* Page breaks */
+.page-break-before {
+  page-break-before: always;
+}
+
+.page-break-after {
+  page-break-after: always;
+}
+
+.page-break-avoid {
+  page-break-inside: avoid;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12pt 0;
+  page-break-inside: auto;
+}
+
+thead {
+  display: table-header-group;
+}
+
+tr {
+  page-break-inside: avoid;
+  page-break-after: auto;
+}
+
+th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+  font-size: 10pt;
+  padding: 8pt;
+  text-align: left;
+  border: 1pt solid #d1d5db;
+}
+
+td {
+  padding: 6pt 8pt;
+  font-size: 9pt;
+  border: 1pt solid #e5e7eb;
+  vertical-align: top;
+}
+
+/* Table of Contents specific */
+.toc-section {
+  page: toc;
+}
+
+@page toc {
+  @top-left {
+    content: none;
+  }
+  @top-center {
+    content: "Table of Contents";
+    font-size: 12pt;
+    font-weight: bold;
+  }
+  @top-right {
+    content: "Page " counter(page);
+    font-size: 10pt;
+  }
+}
+
+.toc-title {
+  font-size: 20pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 40pt 0 20pt 0;
+}
+
+.toc-item {
+  font-size: 12pt;
+  margin: 8pt 0;
+  color: #2563eb;
+  text-decoration: none;
+  display: block;
+}
+
+.toc-item:hover {
+  text-decoration: underline;
+}
+
+/* Patient Information */
+.patient-info-section {
+  page: patient-info;
+}
+
+@page patient-info {
+  @top-left {
+    content: var(--patient-name, "Patient Information");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Patient Information";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Insurance Section */
+.insurance-section {
+  page: insurance;
+}
+
+@page insurance {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Insurance Information";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Contacts Section */
+.contacts-section {
+  page: contacts;
+}
+
+@page contacts {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Patient Contacts";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Medications Section */
+.medications-section {
+  page: medications;
+}
+
+@page medications {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Medication Orders";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* MAR Section */
+.mar-section {
+  page: mar;
+}
+
+@page mar {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Medication Administration Record (MAR)";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Assessments Section */
+.assessments-section {
+  page: assessments;
+}
+
+@page assessments {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Integrated Assessments";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Group Sessions Section */
+.group-sessions-section {
+  page: group-sessions;
+}
+
+@page group-sessions {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: "Group Sessions";
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Consent Forms - Dynamic per form */
+.consent-section {
+  page: consent;
+}
+
+@page consent {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: var(--consent-form-name, "Consent Form");
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Evaluations - Dynamic per evaluation */
+.evaluation-section {
+  page: evaluation;
+}
+
+@page evaluation {
+  @top-left {
+    content: var(--patient-name, "");
+    font-size: 10pt;
+  }
+  @top-center {
+    content: "MR: " var(--mr-number, "N/A") " | DOB: " var(--dob, "N/A");
+    font-size: 10pt;
+  }
+  @top-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 10pt;
+  }
+  @bottom-left {
+    content: "Diagnosis: " var(--diagnosis, "N/A");
+    font-size: 9pt;
+  }
+  @bottom-right {
+    content: var(--evaluation-name, "Patient Evaluation");
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Content formatting */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20pt;
+  margin: 12pt 0;
+}
+
+.field-group {
+  margin-bottom: 12pt;
+}
+
+.label {
+  font-weight: bold;
+  font-size: 11pt;
+  color: #2d3748;
+  margin-bottom: 4pt;
+}
+
+.value {
+  font-size: 11pt;
+  color: #4a5568;
+  margin-bottom: 8pt;
+}
+
+/* Card-style sections */
+.card {
+  border: 1pt solid #e2e8f0;
+  padding: 12pt;
+  margin: 12pt 0;
+  background-color: #f7fafc;
+  page-break-inside: avoid;
+}
+
+.card-title {
+  font-size: 12pt;
+  font-weight: bold;
+  color: #2d3748;
+  margin-bottom: 8pt;
+}
+
