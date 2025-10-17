@@ -1,0 +1,24 @@
+{
+  "name": "json-to-pdf-converter",
+  "version": "1.0.0",
+  "description": "A Vue web app for converting structured JSON files to beautiful PDF documents",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "jspdf": "^2.5.1",
+    "html2canvas": "^1.4.1",
+    "lucide-vue-next": "^0.294.0",
+    "pdfmake": "^0.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "vite": "^5.0.0"
+  }
+}
+
+
