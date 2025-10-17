@@ -75,8 +75,9 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import PdfTemplate from './components/PdfTemplate.vue'
+import { createPdfService } from './services/pdfService.js'
 
 export default {
   name: 'App',
@@ -165,30 +166,82 @@ export default {
         // Set patient data to render the PDF template
         patientData.value = jsonData.data
         
-        // Generate a simple preview
+        // Generate preview
         const patientName = jsonData.data?.attributes?.demographics?.name || {}
         const previewHTML = `
           <div style="font-family: Arial, sans-serif; padding: 20px; background: white;">
-            <h1 style="color: #333;">PDF Generation Ready</h1>
+            <h1 style="color: #333;">PDF Generation in Progress...</h1>
             <p>Patient: ${patientName.first_name || 'Unknown'} ${patientName.last_name || ''}</p>
             <p>Medical Record: ${jsonData.data?.attributes?.identifiers?.medical_record_number || 'N/A'}</p>
             <p>Date: ${new Date().toLocaleString()}</p>
-            <p style="color: #2563eb; font-weight: bold;">Browser print dialog will open - use "Save as PDF" to generate your document.</p>
+            <p style="color: #2563eb; font-weight: bold;">Generating PDF with Puppeteer...</p>
           </div>
         `
         pdfPreview.value = previewHTML
 
-        // Wait a moment for Vue to render the PDF template
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Wait for Vue to render the PDF template
+        await nextTick()
+        await new Promise(resolve => setTimeout(resolve, 1000))
 
-        // Trigger print dialog
+        // Get the rendered PDF container
+        const pdfContainer = document.querySelector('.pdf-container')
+        if (!pdfContainer) {
+          throw new Error('PDF template not rendered')
+        }
+
+        // Read the print CSS file
+        const printCssResponse = await fetch('/src/styles/print.css')
+        const printCss = await printCssResponse.text()
+
+        // Build complete HTML document with all styles
+        const htmlContent = `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Medical Record</title>
+            <style>
+              ${printCss}
+              
+              /* Ensure proper rendering */
+              * {
+                box-sizing: border-box;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+                font-family: 'Helvetica', 'Arial', sans-serif;
+              }
+            </style>
+          </head>
+          <body>
+            ${pdfContainer.outerHTML}
+          </body>
+          </html>
+        `
+
+        // Generate PDF using Puppeteer service
         const startTime = Date.now()
-        window.print()
+        const pdfService = createPdfService('server')
+        const filename = selectedFile.value.name.replace('.json', '') + '_medical_record.pdf'
+        
+        const pdfBlob = await pdfService.generatePDF(htmlContent, { filename })
         const endTime = Date.now()
         
-        console.log(`Print dialog opened in ${endTime - startTime}ms`)
+        console.log(`PDF generated in ${endTime - startTime}ms`)
 
-        success.value = `PDF template ready! Use the print dialog to save as PDF.`
+        // Download PDF
+        const url = URL.createObjectURL(pdfBlob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+
+        success.value = `PDF generated successfully in ${endTime - startTime}ms! File downloaded.`
         
       } catch (err) {
         error.value = `Error converting file: ${err.message}`

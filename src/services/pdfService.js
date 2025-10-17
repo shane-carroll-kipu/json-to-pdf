@@ -58,50 +58,45 @@ export class ClientPrintService {
 
 /**
  * Server-side PDF service using Puppeteer
- * For production use - generates PDF blob
- * 
- * NOTE: This is a stub for future server-side implementation
- * Requires: npm install puppeteer
+ * For production use - generates PDF blob via server API
  */
 export class PuppeteerService {
+  constructor(serverUrl = 'http://localhost:3001') {
+    this.serverUrl = serverUrl
+  }
+
   /**
-   * Generate PDF using Puppeteer (server-side)
+   * Generate PDF using Puppeteer server
    * @param {string} htmlContent - HTML string to convert
    * @param {Object} options - Generation options
    * @returns {Promise<Blob>}
    */
   async generatePDF(htmlContent, options = {}) {
-    // This will be implemented when moving to server-side
-    // For now, throw an error if someone tries to use it
-    throw new Error('PuppeteerService requires server-side implementation. Use ClientPrintService for browser-based generation.')
-    
-    /* Server-side implementation example:
-    const puppeteer = require('puppeteer');
-    
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      displayHeaderFooter: true,
-      margin: {
-        top: '1in',
-        bottom: '1in',
-        left: '0.5in',
-        right: '0.5in'
+    try {
+      const response = await fetch(`${this.serverUrl}/api/generate-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          htmlContent,
+          filename: options.filename || 'medical_record.pdf'
+        })
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'PDF generation failed')
       }
-    });
-    
-    await browser.close();
-    
-    return new Blob([pdfBuffer], { type: 'application/pdf' });
-    */
+      
+      // Convert response to blob
+      const blob = await response.blob()
+      return blob
+      
+    } catch (error) {
+      console.error('PuppeteerService error:', error)
+      throw new Error(`Failed to generate PDF: ${error.message}`)
+    }
   }
 }
 

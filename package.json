@@ -5,20 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run server\"",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.0",
-    "jspdf": "^2.5.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "lucide-vue-next": "^0.294.0",
-    "pdfmake": "^0.2.8"
+    "pdfmake": "^0.2.8",
+    "puppeteer": "^24.25.0",
+    "vue": "^3.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.0",
+    "concurrently": "^9.2.1",
     "vite": "^5.0.0"
   }
 }
-
-
