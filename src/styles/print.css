@@ -1,0 +1,265 @@
+/**
+ * Print-specific styles for PDF generation
+ * Includes @page rules for dynamic section headers
+ */
+
+/* Base page settings - applies to all pages including last page */
+@page {
+  size: A4;
+  margin: 1in 0.5in;
+  /* Base running header/footer. Specific section @page rules override as needed */
+  @top-right {
+    content: "Page " counter(page);
+    font-size: 10pt;
+  }
+  @bottom-right {
+    content: string(section);
+    font-size: 9pt;
+    font-style: italic;
+  }
+}
+
+/* Print-only container */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .pdf-container {
+    display: block;
+    width: 100%;
+    background: white;
+  }
+  
+  /* Hide non-PDF content when printing */
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Screen view - hide PDF template by default */
+@media screen {
+  .pdf-container {
+    display: none;
+  }
+  
+  /* When in print preview mode, show it */
+  .pdf-container.preview-mode {
+    display: block;
+    max-width: 8.5in;
+    margin: 20px auto;
+    padding: 1in 0.5in;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+}
+
+/* Typography */
+.pdf-container {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.4;
+  color: #000;
+}
+
+/* Headers and Titles */
+.section-title {
+  font-size: 16pt;
+  font-weight: bold;
+  color: #000;
+  margin: 20pt 0 12pt 0;
+  padding-bottom: 4pt;
+  border-bottom: 2pt solid #000;
+  page-break-after: avoid;
+  /* Enable Paged.js named string for running section titles */
+  string-set: section content();
+}
+
+.subsection-title {
+  font-size: 13pt;
+  font-weight: bold;
+  color: #000;
+  margin: 16pt 0 10pt 0;
+  page-break-after: avoid;
+}
+
+/* Page breaks */
+.page-break-before {
+  page-break-before: always;
+}
+
+.page-break-after {
+  page-break-after: always;
+}
+
+.page-break-avoid {
+  page-break-inside: avoid;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12pt 0;
+  page-break-inside: auto;
+}
+
+thead {
+  display: table-header-group;
+}
+
+tr {
+  page-break-inside: avoid;
+  page-break-after: auto;
+}
+
+th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  font-size: 10pt;
+  padding: 8pt;
+  text-align: left;
+  border: 1pt solid #d1d5db;
+}
+
+td {
+  padding: 6pt 8pt;
+  font-size: 9pt;
+  border: 1pt solid #e5e7eb;
+  vertical-align: top;
+}
+
+/* Table of Contents specific */
+.toc-section {
+  page: toc;
+  page-break-after: always !important;
+  break-after: page;
+}
+
+@page toc {
+  @top-left {
+    content: none;
+  }
+  @top-center {
+    content: "Table of Contents";
+    font-size: 12pt;
+    font-weight: bold;
+  }
+  @top-right {
+    content: "Page " counter(page);
+    font-size: 10pt;
+  }
+}
+
+.toc-title {
+  font-size: 18pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 40pt 0 20pt 0;
+}
+
+.toc-items {
+  /* Single column for clearer layout */
+  max-width: 100%;
+}
+
+/* New simplified TOC entry structure */
+.toc-entry {
+  display: flex;
+  align-items: baseline;
+  margin: 6pt 0;
+  font-size: 10pt;
+  color: #000;
+  break-inside: avoid;
+}
+
+.toc-entry .toc-title {
+  flex-shrink: 0;
+  font-size: 10pt;
+  font-weight: normal;
+  text-align: left;
+  margin: 0;
+}
+
+.toc-dots {
+  flex-grow: 1;
+  border-bottom: 1px dotted #999;
+  margin: 0 6pt;
+  height: 1em;
+}
+
+.toc-pages {
+  flex-shrink: 0;
+  font-weight: bold;
+  min-width: 40pt;
+  text-align: right;
+  color: #000;
+}
+
+.toc-section-header {
+  font-weight: bold;
+  font-size: 11pt;
+  margin-top: 12pt;
+  margin-bottom: 6pt;
+}
+
+.toc-subitem {
+  margin-left: 15pt;
+  font-size: 9pt;
+}
+
+/* Patient Info Section - always starts on new page after TOC */
+.patient-info-section {
+  page-break-before: always !important;
+  break-before: page;
+}
+
+/* Content formatting */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20pt;
+  margin: 12pt 0;
+}
+
+.field-group {
+  margin-bottom: 12pt;
+}
+
+.label {
+  font-weight: bold;
+  font-size: 11pt;
+  color: #000;
+  margin-bottom: 4pt;
+}
+
+.value {
+  font-size: 11pt;
+  color: #333;
+  margin-bottom: 8pt;
+}
+
+/* Card-style sections */
+.card {
+  border: 1pt solid #e2e8f0;
+  padding: 12pt;
+  margin: 12pt 0;
+  background-color: #f5f5f5;
+  page-break-inside: avoid;
+}
+
+.card-title {
+  font-size: 12pt;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 8pt;
+}
+
+/* Section end markers - hidden but used for page range detection */
+.section-end-marker {
+  display: none;
+  visibility: hidden;
+  height: 0;
+  width: 0;
+}
