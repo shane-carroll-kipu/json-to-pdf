@@ -1,12 +1,11 @@
 <template>
-  <div>
-    <div
-      v-for="(evaluation, index) in evaluations"
-      :key="evaluation.id"
-      class="evaluation-section page-break-before"
-      :id="`evaluation-${evaluation.id}`"
-      :style="getEvaluationStyle(evaluation)"
-    >
+  <div
+    v-for="(evaluation, index) in evaluations"
+    :key="evaluation.id"
+    class="evaluation-section page-break-before"
+    :id="`evaluation-${evaluation.id}`"
+  >
+      <a :id="`evaluation-${evaluation.id}-start`"></a>
       <h1 class="section-title">{{ evaluation.attributes?.evaluation_name || 'Patient Evaluation' }}</h1>
       
       <div class="two-column">
@@ -62,7 +61,10 @@
           </div>
         </div>
       </div>
-    </div>
+      
+      <!-- Section end marker for page range detection -->
+      <a :id="`evaluation-${evaluation.id}-end`"></a>
+      <div class="section-end-marker" :data-section-end="`evaluation-${evaluation.id}`"></div>
   </div>
 </template>
 
@@ -86,12 +88,6 @@ export default {
       const tmp = document.createElement('div')
       tmp.innerHTML = html
       return tmp.textContent || tmp.innerText || ''
-    },
-    getEvaluationStyle(evaluation) {
-      const evaluationName = evaluation.attributes?.evaluation_name || 'Patient Evaluation'
-      return {
-        '--evaluation-name': `"${evaluationName}"`
-      }
     }
   }
 }

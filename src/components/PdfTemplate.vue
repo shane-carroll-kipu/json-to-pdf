@@ -1,5 +1,5 @@
 <template>
-  <div class="pdf-container" :style="cssVariables">
+  <div class="pdf-container">
     <PdfTableOfContents :patientData="patientData" />
     <PdfPatientInfo :patientData="patientData" />
     <PdfInsurance :insurances="patientData.attributes?.insurances" v-if="hasInsurance" />
@@ -87,28 +87,6 @@ export default {
     },
     hasEvaluations() {
       return this.attrs.patient_evaluations && this.attrs.patient_evaluations.length > 0
-    },
-    // CSS variables for @page rules
-    cssVariables() {
-      const patientName = `${this.name.first_name || ''} ${this.name.last_name || ''}`.trim()
-      const mrNumber = this.identifiers.medical_record_number || 'N/A'
-      const dob = this.demographics.date_of_birth || 'N/A'
-      
-      // Format diagnosis
-      const diagnosisText = this.diagnoses.length > 0
-        ? this.diagnoses.map(d => {
-            const code = d.attributes?.code || ''
-            const dxName = d.attributes?.name || ''
-            return dxName ? `${code} (${dxName})` : code
-          }).join(', ')
-        : 'N/A'
-      
-      return {
-        '--patient-name': `"${patientName}"`,
-        '--mr-number': `"${mrNumber}"`,
-        '--dob': `"${dob}"`,
-        '--diagnosis': `"${diagnosisText}"`
-      }
     }
   }
 }

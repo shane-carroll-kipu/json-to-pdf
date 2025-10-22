@@ -1,5 +1,6 @@
 <template>
   <div class="contacts-section page-break-before" id="contacts">
+    <a id="contacts-start"></a>
     <h1 class="section-title">PATIENT CONTACTS</h1>
     
     <div v-for="contact in contacts" :key="contact.id" class="card page-break-avoid">
@@ -38,6 +39,10 @@
         </div>
       </div>
     </div>
+    
+    <!-- Section end marker for page range detection -->
+    <a id="contacts-end"></a>
+    <div class="section-end-marker" data-section-end="contacts"></div>
   </div>
 </template>
 

@@ -1,12 +1,12 @@
 <template>
   <div class="medications-section page-break-before" id="medications">
+    <a id="medications-start"></a>
     <h1 class="section-title">MEDICATION ORDERS</h1>
     
     <table>
       <thead>
         <tr>
           <th>Medication Name</th>
-          <th>Order Type</th>
           <th>Route</th>
           <th>PRN</th>
           <th>Start Date</th>
@@ -18,7 +18,6 @@
       <tbody>
         <tr v-for="medication in medications" :key="medication.id">
           <td>{{ medication.attributes?.medication_name || 'Unnamed Medication' }}</td>
-          <td>{{ medication.attributes?.order_type || 'N/A' }}</td>
           <td>{{ medication.attributes?.route || 'N/A' }}</td>
           <td>{{ medication.attributes?.prn ? 'Yes' : 'No' }}</td>
           <td>{{ formatDate(medication.attributes?.start_date) }}</td>
@@ -29,15 +28,9 @@
       </tbody>
     </table>
     
-    <!-- Justifications and Warnings -->
-    <div v-for="medication in medicationsWithNotes" :key="medication.id" style="margin-top: 12pt;">
-      <div v-if="medication.attributes?.justification" style="font-size: 10pt; color: #4a5568; margin-bottom: 6pt;">
-        <strong>{{ medication.attributes.medication_name }}:</strong> {{ medication.attributes.justification }}
-      </div>
-      <div v-if="medication.attributes?.warnings" style="font-size: 10pt; color: #d32f2f; margin-bottom: 6pt;">
-        <strong>⚠️ {{ medication.attributes.medication_name }}:</strong> {{ medication.attributes.warnings }}
-      </div>
-    </div>
+    <!-- Section end marker for page range detection -->
+    <a id="medications-end"></a>
+    <div class="section-end-marker" data-section-end="medications"></div>
   </div>
 </template>
 
@@ -48,14 +41,6 @@ export default {
     medications: {
       type: Array,
       default: () => []
-    }
-  },
-  computed: {
-    medicationsWithNotes() {
-      return this.medications.filter(med => {
-        const attrs = med.attributes || {}
-        return attrs.justification || attrs.warnings
-      })
     }
   },
   methods: {

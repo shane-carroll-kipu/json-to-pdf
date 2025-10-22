@@ -1,5 +1,6 @@
 <template>
   <div class="patient-info-section" id="patient-info">
+    <a id="patient-info-start"></a>
     <h1 class="section-title">PATIENT INFORMATION</h1>
     
     <!-- Demographics -->
@@ -145,6 +146,10 @@
         </div>
       </div>
     </div>
+    
+    <!-- Section end marker for page range detection -->
+    <a id="patient-info-end"></a>
+    <div class="section-end-marker" data-section-end="patient-info"></div>
   </div>
 </template>
 

@@ -1,12 +1,11 @@
 <template>
-  <div>
-    <div
-      v-for="(form, index) in forms"
-      :key="form.id"
-      class="consent-section page-break-before"
-      :id="`consent-${form.id}`"
-      :style="getFormStyle(form)"
-    >
+  <div
+    v-for="(form, index) in forms"
+    :key="form.id"
+    class="consent-section page-break-before"
+    :id="`consent-${form.id}`"
+  >
+      <a :id="`consent-${form.id}-start`"></a>
       <h1 class="section-title">{{ form.attributes?.consent_form_name || 'Consent Form' }}</h1>
       
       <div class="two-column">
@@ -36,11 +35,14 @@
         </div>
       </div>
       
-      <div v-if="form.attributes?.form_content" style="margin-top: 20pt;">
+      <div v-if="form.attributes?.content" style="margin-top: 20pt;">
         <div class="label">Form Content:</div>
-        <div class="value" style="white-space: pre-wrap;" v-html="stripHtml(form.attributes.form_content)"></div>
+        <div class="value" v-html="form.attributes.content"></div>
       </div>
-    </div>
+      
+      <!-- Section end marker for page range detection -->
+      <a :id="`consent-${form.id}-end`"></a>
+      <div class="section-end-marker" :data-section-end="`consent-${form.id}`"></div>
   </div>
 </template>
 
@@ -64,12 +66,6 @@ export default {
       const tmp = document.createElement('div')
       tmp.innerHTML = html
       return tmp.textContent || tmp.innerText || ''
-    },
-    getFormStyle(form) {
-      const formName = form.attributes?.consent_form_name || 'Consent Form'
-      return {
-        '--consent-form-name': `"${formName}"`
-      }
     }
   }
 }

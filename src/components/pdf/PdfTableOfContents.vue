@@ -3,44 +3,83 @@
     <h1 class="toc-title">Table of Contents</h1>
     
     <div class="toc-items">
-      <a href="#patient-info" class="toc-item">Patient Information</a>
+      <!-- Patient Information -->
+      <div class="toc-entry" data-toc-target="patient-info">
+        <span class="toc-title">Patient Information</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
-      <a href="#insurance" class="toc-item" v-if="hasInsurance">Insurance Information</a>
+      <!-- Insurance Information -->
+      <div v-if="hasInsurance" class="toc-entry" data-toc-target="insurance">
+        <span class="toc-title">Insurance Information</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
-      <a href="#contacts" class="toc-item" v-if="hasContacts">Patient Contacts</a>
+      <!-- Patient Contacts -->
+      <div v-if="hasContacts" class="toc-entry" data-toc-target="contacts">
+        <span class="toc-title">Patient Contacts</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
-      <a href="#medications" class="toc-item" v-if="hasMedications">Medication Orders</a>
+      <!-- Medication Orders -->
+      <div v-if="hasMedications" class="toc-entry" data-toc-target="medications">
+        <span class="toc-title">Medication Orders</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
-      <a href="#mar" class="toc-item" v-if="hasMAR">Medication Administration Record (MAR)</a>
+      <!-- MAR -->
+      <div v-if="hasMAR" class="toc-entry" data-toc-target="mar">
+        <span class="toc-title">Medication Administration Record (MAR)</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
-      <a href="#assessments" class="toc-item" v-if="hasAssessments">Integrated Assessments</a>
+      <!-- Integrated Assessments -->
+      <div v-if="hasAssessments" class="toc-entry" data-toc-target="assessments">
+        <span class="toc-title">Integrated Assessments</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
-      <a href="#group-sessions" class="toc-item" v-if="hasGroupSessions">Group Sessions</a>
+      <!-- Group Sessions -->
+      <div v-if="hasGroupSessions" class="toc-entry" data-toc-target="group-sessions">
+        <span class="toc-title">Group Sessions</span>
+        <span class="toc-dots"></span>
+        <span class="toc-pages"></span>
+      </div>
       
+      <!-- Consent Forms -->
       <template v-if="hasConsentForms">
-        <div class="toc-item" style="font-weight: bold; margin-top: 12pt; color: #000;">Consent Forms</div>
-        <a
+        <div class="toc-section-header">Consent Forms</div>
+        <div
           v-for="form in consentForms"
           :key="form.id"
-          :href="`#consent-${form.id}`"
-          class="toc-item"
-          style="margin-left: 20pt;"
+          class="toc-entry toc-subitem"
+          :data-toc-target="`consent-${form.id}`"
         >
-          • {{ form.attributes?.consent_form_name || 'Consent Form' }}
-        </a>
+          <span class="toc-title">• {{ form.attributes?.consent_form_name || 'Consent Form' }}</span>
+          <span class="toc-dots"></span>
+          <span class="toc-pages"></span>
+        </div>
       </template>
       
+      <!-- Patient Evaluations -->
       <template v-if="hasEvaluations">
-        <div class="toc-item" style="font-weight: bold; margin-top: 12pt; color: #000;">Patient Evaluations</div>
-        <a
+        <div class="toc-section-header">Patient Evaluations</div>
+        <div
           v-for="evaluation in evaluations"
           :key="evaluation.id"
-          :href="`#evaluation-${evaluation.id}`"
-          class="toc-item"
-          style="margin-left: 20pt;"
+          class="toc-entry toc-subitem"
+          :data-toc-target="`evaluation-${evaluation.id}`"
         >
-          • {{ evaluation.attributes?.evaluation_name || 'Patient Evaluation' }}
-        </a>
+          <span class="toc-title">• {{ evaluation.attributes?.evaluation_name || 'Patient Evaluation' }}</span>
+          <span class="toc-dots"></span>
+          <span class="toc-pages"></span>
+        </div>
       </template>
     </div>
   </div>
@@ -94,4 +133,3 @@ export default {
   }
 }
 </script>
-

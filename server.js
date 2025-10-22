@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import puppeteer from 'puppeteer'
+import { getBrowser, generatePdfFromHtml, injectTOCPageNumbers } from './src/services/puppeteerGenerator.js'
 
 const app = express()
 const PORT = 3001
@@ -9,28 +9,11 @@ const PORT = 3001
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
-// Browser instance for reuse
-let browser = null
+// Serve Paged.js from node_modules so it can be loaded reliably in Puppeteer
+app.use('/pagedjs', express.static('node_modules/pagedjs/dist'))
 
-/**
- * Get or create browser instance
- * Reusing browser improves performance
- */
-async function getBrowser() {
-  if (!browser || !browser.isConnected()) {
-    console.log('Launching new browser instance...')
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
-    })
-  }
-  return browser
-}
+
+// Browser is managed in puppeteerGenerator.js
 
 /**
  * Generate PDF from HTML content
@@ -43,6 +26,7 @@ app.post('/api/generate-pdf', async (req, res) => {
   
   try {
     const { htmlContent, filename = 'medical_record.pdf' } = req.body
+    const debug = String(req.query.debug || '').toLowerCase() === '1'
     
     if (!htmlContent) {
       return res.status(400).json({ error: 'htmlContent is required' })
@@ -50,37 +34,55 @@ app.post('/api/generate-pdf', async (req, res) => {
     
     console.log(`Generating PDF: ${filename}`)
     
-    // Get browser and create new page
+    // Render HTML in headless browser and wait for Paged.js readiness
     const browserInstance = await getBrowser()
-    page = await browserInstance.newPage()
+    const renderResult = await generatePdfFromHtml(browserInstance, htmlContent, { waitForReady: true, returnPage: true })
+    page = renderResult.page
+    const metrics = renderResult.metrics || {}
     
-    // Set viewport for consistent rendering
-    await page.setViewport({ width: 1200, height: 1600 })
-    
-    // Set content and wait for it to be ready
-    await page.setContent(htmlContent, {
-      waitUntil: ['networkidle0', 'domcontentloaded']
+    // Check for console messages from the page (for debugging Paged.js)
+    page.on('console', msg => {
+      console.log('Browser console:', msg.type(), msg.text())
     })
     
+    // Inject TOC page numbers by querying Paged.js internal structure
+    const tocResult = await injectTOCPageNumbers(page)
+    console.log('TOC injection complete:', tocResult)
+    
+    // In debug mode return the fully rendered HTML to help devs inspect pagination
+    if (debug) {
+      const html = await page.content()
+      await page.close()
+      const endTime = Date.now()
+      console.log(`HTML preview generated in ${endTime - startTime}ms`)
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      return res.send(html)
+    }
+
     // Generate PDF with options
-    const pdfBuffer = await page.pdf({
+    let pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      displayHeaderFooter: false, // We use CSS @page rules instead
-      margin: {
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0
-      },
-      preferCSSPageSize: true // Use CSS page size from @page rules
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      preferCSSPageSize: true
     })
     
     // Close the page
     await page.close()
     
     const endTime = Date.now()
-    console.log(`PDF generated in ${endTime - startTime}ms`)
+    const totalMs = endTime - startTime
+    
+    // Log comprehensive metrics
+    console.log(`PDF generated successfully:`, {
+      filename,
+      paginateMs: metrics.paginateMs || 0,
+      pdfMs: metrics.pdfMs || 0,
+      totalMs,
+      sizeKB: Math.round(pdfBuffer.length / 1024),
+      tocEntries: tocResult.tocEntriesInjected,
+      totalPages: tocResult.totalPages
+    })
     
     // Send PDF as response
     res.setHeader('Content-Type', 'application/pdf')
@@ -110,11 +112,19 @@ app.post('/api/generate-pdf', async (req, res) => {
 /**
  * Health check endpoint
  */
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    browserConnected: browser ? browser.isConnected() : false
-  })
+app.get('/health', async (req, res) => {
+  try {
+    const browser = await getBrowser()
+    res.json({
+      status: 'ok',
+      browserConnected: browser ? browser.isConnected() : false
+    })
+  } catch (error) {
+    res.json({
+      status: 'ok',
+      browserConnected: false
+    })
+  }
 })
 
 /**
@@ -123,6 +133,7 @@ app.get('/health', (req, res) => {
 async function shutdown() {
   console.log('Shutting down server...')
   
+  const browser = await getBrowser().catch(() => null)
   if (browser) {
     await browser.close()
     console.log('Browser closed')

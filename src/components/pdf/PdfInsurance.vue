@@ -1,5 +1,6 @@
 <template>
   <div class="insurance-section page-break-before" id="insurance">
+    <a id="insurance-start"></a>
     <h1 class="section-title">INSURANCE INFORMATION</h1>
     
     <div v-for="insurance in insurances" :key="insurance.id" class="card page-break-avoid">
@@ -81,6 +82,10 @@
         </div>
       </div>
     </div>
+    
+    <!-- Section end marker for page range detection -->
+    <a id="insurance-end"></a>
+    <div class="section-end-marker" data-section-end="insurance"></div>
   </div>
 </template>
 

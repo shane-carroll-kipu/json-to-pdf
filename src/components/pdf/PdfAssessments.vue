@@ -1,5 +1,6 @@
 <template>
   <div class="assessments-section page-break-before" id="assessments">
+    <a id="assessments-start"></a>
     <h1 class="section-title">INTEGRATED ASSESSMENTS</h1>
     
     <!-- Vital Signs -->
@@ -173,6 +174,10 @@
         </tbody>
       </table>
     </div>
+    
+    <!-- Section end marker for page range detection -->
+    <a id="assessments-end"></a>
+    <div class="section-end-marker" data-section-end="assessments"></div>
   </div>
 </template>
 

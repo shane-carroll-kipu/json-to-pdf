@@ -1,5 +1,6 @@
 <template>
   <div class="mar-section page-break-before" id="mar">
+    <a id="mar-start"></a>
     <h1 class="section-title">MEDICATION ADMINISTRATION RECORD (MAR)</h1>
     
     <table>
@@ -24,6 +25,10 @@
         </tr>
       </tbody>
     </table>
+    
+    <!-- Section end marker for page range detection -->
+    <a id="mar-end"></a>
+    <div class="section-end-marker" data-section-end="mar"></div>
   </div>
 </template>
 

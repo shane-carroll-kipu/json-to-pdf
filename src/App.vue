@@ -93,6 +93,7 @@ export default {
     const pdfPreview = ref('')
     const fileInput = ref(null)
     const patientData = ref(null)
+    const cachedCss = ref(null)
 
     // Removed programmatic click to avoid double-open behavior
     const triggerFileInput = () => {}
@@ -181,7 +182,7 @@ export default {
 
         // Wait for Vue to render the PDF template
         await nextTick()
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await nextTick() // Double tick ensures child components rendered
 
         // Get the rendered PDF container
         const pdfContainer = document.querySelector('.pdf-container')
@@ -189,9 +190,49 @@ export default {
           throw new Error('PDF template not rendered')
         }
 
-        // Read the print CSS file
-        const printCssResponse = await fetch('/src/styles/print.css')
-        const printCss = await printCssResponse.text()
+        // Read the print CSS file with error handling (with caching)
+        let printCss = ''
+        try {
+          // Check cache first
+          if (cachedCss.value) {
+            printCss = cachedCss.value
+          } else {
+            // Use ?raw parameter to get raw CSS content from Vite instead of JS module wrapper
+            const printCssResponse = await fetch('/src/styles/print.css?raw')
+            if (!printCssResponse.ok) {
+              throw new Error(`Failed to fetch CSS: ${printCssResponse.status}`)
+            }
+            printCss = await printCssResponse.text()
+            
+            // Cache it for future use
+            cachedCss.value = printCss
+          }
+          
+          // Since Puppeteer now emulates print media (in server.js),
+          // @media print rules will apply automatically - no need to extract them!
+          
+          // Force pdf-container to be visible
+          printCss += `
+            /* Force styles for Puppeteer rendering */
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            .pdf-container {
+              display: block !important;
+              width: 100%;
+              background: white;
+            }
+            .no-print {
+              display: none !important;
+            }
+          `
+          
+        } catch (cssError) {
+          console.error('Error loading CSS:', cssError)
+          error.value = 'Failed to load print styles. Make sure dev server is running.'
+          throw cssError
+        }
 
         // Build complete HTML document with all styles
         const htmlContent = `
@@ -203,20 +244,44 @@ export default {
             <title>Medical Record</title>
             <style>
               ${printCss}
-              
-              /* Ensure proper rendering */
-              * {
-                box-sizing: border-box;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-                font-family: 'Helvetica', 'Arial', sans-serif;
-              }
             </style>
+            <script src="http://localhost:3001/pagedjs/paged.polyfill.js"><\/script>
           </head>
           <body>
             ${pdfContainer.outerHTML}
+            <script>
+              window._pdfReady = false;
+              console.log('Waiting for Paged.js polyfill to auto-run...');
+              
+              // Paged.js polyfill automatically runs when loaded
+              // We detect completion by observing when it creates the .pagedjs_pages container
+              document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, polling for Paged.js completion...');
+                
+                var checkInterval = setInterval(function() {
+                  // Check if Paged.js has created the pagination container
+                  var pagedContainer = document.querySelector('.pagedjs_pages');
+                  if (pagedContainer) {
+                    // Count actual pages to verify completion
+                    var pages = pagedContainer.querySelectorAll('.pagedjs_page');
+                    if (pages.length > 0) {
+                      console.log('Paged.js auto-pagination complete:', pages.length, 'pages created');
+                      window._pdfReady = true;
+                      clearInterval(checkInterval);
+                    }
+                  }
+                }, 100); // Check every 100ms
+                
+                // Safety timeout in case Paged.js never completes
+                setTimeout(function() {
+                  if (!window._pdfReady) {
+                    console.warn('Paged.js timeout after 30s, marking ready anyway');
+                    window._pdfReady = true;
+                    clearInterval(checkInterval);
+                  }
+                }, 30000);
+              });
+            <\/script>
           </body>
           </html>
         `
@@ -261,6 +326,7 @@ export default {
       pdfPreview,
       fileInput,
       patientData,
+      cachedCss,
       triggerFileInput,
       handleDragOver,
       handleDragLeave,
