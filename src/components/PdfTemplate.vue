@@ -8,6 +8,7 @@
     <PdfMAR :administrations="patientData.attributes?.medications?.administered" v-if="hasMAR" />
     <PdfAssessments :assessments="patientData.attributes?.integrated_assessments" v-if="hasAssessments" />
     <PdfGroupSessions :sessions="patientData.attributes?.group_sessions" v-if="hasGroupSessions" />
+    <PdfRounds :rounds="patientData.attributes?.rounds" v-if="hasRounds" />
     <PdfConsentForms :forms="patientData.attributes?.consent_forms" v-if="hasConsentForms" />
     <PdfEvaluations :evaluations="patientData.attributes?.patient_evaluations" v-if="hasEvaluations" />
   </div>
@@ -22,6 +23,7 @@ import PdfMedications from './pdf/PdfMedications.vue'
 import PdfMAR from './pdf/PdfMAR.vue'
 import PdfAssessments from './pdf/PdfAssessments.vue'
 import PdfGroupSessions from './pdf/PdfGroupSessions.vue'
+import PdfRounds from './pdf/PdfRounds.vue'
 import PdfConsentForms from './pdf/PdfConsentForms.vue'
 import PdfEvaluations from './pdf/PdfEvaluations.vue'
 
@@ -36,6 +38,7 @@ export default {
     PdfMAR,
     PdfAssessments,
     PdfGroupSessions,
+    PdfRounds,
     PdfConsentForms,
     PdfEvaluations
   },
@@ -81,6 +84,9 @@ export default {
     },
     hasGroupSessions() {
       return this.attrs.group_sessions && this.attrs.group_sessions.length > 0
+    },
+    hasRounds() {
+      return this.attrs.rounds && this.attrs.rounds.length > 0
     },
     hasConsentForms() {
       return this.attrs.consent_forms && this.attrs.consent_forms.length > 0

@@ -8,45 +8,8 @@
       <a :id="`evaluation-${evaluation.id}-start`"></a>
       <h1 class="section-title">{{ evaluation.attributes?.evaluation_name || 'Patient Evaluation' }}</h1>
       
-      <div class="two-column">
-        <div>
-          <div class="field-group">
-            <div class="label">Evaluation Name:</div>
-            <div class="value">{{ evaluation.attributes?.evaluation_name || 'N/A' }}</div>
-          </div>
-          <div class="field-group">
-            <div class="label">Status:</div>
-            <div class="value">{{ evaluation.attributes?.status || 'N/A' }}</div>
-          </div>
-          <div class="field-group">
-            <div class="label">Complete:</div>
-            <div class="value">{{ evaluation.attributes?.complete ? 'Yes' : 'No' }}</div>
-          </div>
-          <div class="field-group">
-            <div class="label">Evaluation Date:</div>
-            <div class="value">{{ formatDateTime(evaluation.attributes?.evaluation_date) }}</div>
-          </div>
-        </div>
-        <div>
-          <div class="field-group">
-            <div class="label">Tab Name:</div>
-            <div class="value">{{ evaluation.attributes?.tab_name || 'N/A' }}</div>
-          </div>
-          <div class="field-group">
-            <div class="label">Signed:</div>
-            <div class="value">{{ formatDateTime(evaluation.attributes?.document_signer_metadata?.signed_at) }}</div>
-          </div>
-          <div class="field-group">
-            <div class="label">Reviewed:</div>
-            <div class="value">{{ formatDateTime(evaluation.attributes?.document_reviewer_metadata?.reviewed_at) }}</div>
-          </div>
-        </div>
-      </div>
-      
       <!-- Evaluation Items -->
-      <div v-if="evaluation.attributes?.items && evaluation.attributes.items.length > 0" style="margin-top: 20pt;">
-        <h2 class="subsection-title">Evaluation Items</h2>
-        
+      <div v-if="evaluation.attributes?.items && evaluation.attributes.items.length > 0">
         <div v-for="item in evaluation.attributes.items" :key="item.id" class="page-break-avoid" style="margin-bottom: 16pt;">
           <div v-if="item.attributes?.label && item.attributes.field_type !== 'title'" class="label">
             {{ stripHtml(item.attributes.label) }}
@@ -59,6 +22,16 @@
           <div v-if="item.attributes?.content" class="value" style="white-space: pre-wrap;">
             {{ item.attributes.content }}
           </div>
+        </div>
+      </div>
+      
+      <!-- Signatures Section -->
+      <div v-if="hasSignatures(evaluation)" style="margin-top: 30pt; border-top: 1pt solid #ccc; padding-top: 10pt;">
+        <div v-if="evaluation.attributes?.document_signer_metadata?.signed_by && evaluation.attributes?.document_signer_metadata?.signed_at" style="margin-bottom: 8pt;">
+          Electronically signed by Signer ID: {{ evaluation.attributes.document_signer_metadata.signed_by }} on {{ formatDateTime(evaluation.attributes.document_signer_metadata.signed_at) }}
+        </div>
+        <div v-if="evaluation.attributes?.document_reviewer_metadata?.reviewed_by && evaluation.attributes?.document_reviewer_metadata?.reviewed_at" style="margin-bottom: 8pt;">
+          Reviewed by Reviewer ID: {{ evaluation.attributes.document_reviewer_metadata.reviewed_by }} on {{ formatDateTime(evaluation.attributes.document_reviewer_metadata.reviewed_at) }}
         </div>
       </div>
       
@@ -88,6 +61,16 @@ export default {
       const tmp = document.createElement('div')
       tmp.innerHTML = html
       return tmp.textContent || tmp.innerText || ''
+    },
+    hasSignatures(evaluation) {
+      const attrs = evaluation.attributes || {}
+      const signerMeta = attrs.document_signer_metadata || {}
+      const reviewerMeta = attrs.document_reviewer_metadata || {}
+      
+      return !!(
+        (signerMeta.signed_by && signerMeta.signed_at) ||
+        (reviewerMeta.reviewed_by && reviewerMeta.reviewed_at)
+      )
     }
   }
 }
