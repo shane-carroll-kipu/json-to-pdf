@@ -3,30 +3,57 @@
     <a id="medications-start"></a>
     <h1 class="section-title">MEDICATION ORDERS</h1>
     
-    <table>
-      <thead>
-        <tr>
-          <th>Medication Name</th>
-          <th>Route</th>
-          <th>PRN</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Status</th>
-          <th>Provider</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="medication in medications" :key="medication.id">
-          <td>{{ medication.attributes?.medication_name || 'Unnamed Medication' }}</td>
-          <td>{{ medication.attributes?.route || 'N/A' }}</td>
-          <td>{{ medication.attributes?.prn ? 'Yes' : 'No' }}</td>
-          <td>{{ formatDate(medication.attributes?.start_date) }}</td>
-          <td>{{ formatDate(medication.attributes?.end_date) }}</td>
-          <td>{{ medication.attributes?.status || 'N/A' }}</td>
-          <td>{{ getProviderName(medication.attributes?.ordering_provider) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Active Medications -->
+    <div v-if="activeMedications.length > 0">
+      <h2 class="subsection-title">Active Medications</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Medication Name</th>
+            <th>Route</th>
+            <th>PRN</th>
+            <th>Start Date</th>
+            <th>Provider</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="medication in activeMedications" :key="medication.id">
+            <td>{{ medication.attributes?.medication_name || 'Unnamed Medication' }}</td>
+            <td>{{ medication.attributes?.route || 'N/A' }}</td>
+            <td>{{ medication.attributes?.prn ? 'Yes' : 'No' }}</td>
+            <td>{{ formatDate(medication.attributes?.start_date) }}</td>
+            <td>{{ getProviderName(medication.attributes?.ordering_provider) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Discontinued Medications -->
+    <div v-if="discontinuedMedications.length > 0" style="margin-top: 20pt;">
+      <h2 class="subsection-title">Discontinued Medications</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Medication Name</th>
+            <th>Route</th>
+            <th>PRN</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Provider</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="medication in discontinuedMedications" :key="medication.id">
+            <td>{{ medication.attributes?.medication_name || 'Unnamed Medication' }}</td>
+            <td>{{ medication.attributes?.route || 'N/A' }}</td>
+            <td>{{ medication.attributes?.prn ? 'Yes' : 'No' }}</td>
+            <td>{{ formatDate(medication.attributes?.start_date) }}</td>
+            <td>{{ formatDate(medication.attributes?.end_date) }}</td>
+            <td>{{ getProviderName(medication.attributes?.ordering_provider) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     
     <!-- Section end marker for page range detection -->
     <a id="medications-end"></a>
@@ -41,6 +68,14 @@ export default {
     medications: {
       type: Array,
       default: () => []
+    }
+  },
+  computed: {
+    activeMedications() {
+      return this.medications.filter(med => !med.attributes?.discontinued)
+    },
+    discontinuedMedications() {
+      return this.medications.filter(med => med.attributes?.discontinued)
     }
   },
   methods: {

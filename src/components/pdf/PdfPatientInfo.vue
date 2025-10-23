@@ -120,6 +120,29 @@
       </div>
     </div>
     
+    <!-- Diagnoses -->
+    <div v-if="diagnoses.length > 0">
+      <h2 class="subsection-title">Diagnoses</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Started At</th>
+            <th>Ended At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="diagnosis in diagnoses" :key="diagnosis.attributes?.code">
+            <td>{{ diagnosis.attributes?.code || 'N/A' }}</td>
+            <td>{{ diagnosis.attributes?.name || 'N/A' }}</td>
+            <td>{{ formatDate(diagnosis.attributes?.started_at) }}</td>
+            <td>{{ formatDate(diagnosis.attributes?.ended_at) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
     <!-- Allergies -->
     <div v-if="allergies.length > 0">
       <h2 class="subsection-title">Allergies</h2>
@@ -145,6 +168,27 @@
           <div class="value">{{ allergy.attributes?.status || 'N/A' }}</div>
         </div>
       </div>
+    </div>
+    
+    <!-- Diets -->
+    <div v-if="diets.length > 0">
+      <h2 class="subsection-title">Dietary Restrictions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Diet</th>
+            <th>Created At</th>
+            <th>Created By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="diet in diets" :key="diet.id">
+            <td>{{ diet.attributes?.diet || 'N/A' }}</td>
+            <td>{{ formatDate(diet.attributes?.created_at) }}</td>
+            <td>{{ diet.attributes?.created_by || 'N/A' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     
     <!-- Section end marker for page range detection -->
@@ -178,8 +222,14 @@ export default {
     identifiers() {
       return this.attrs.identifiers || {}
     },
+    diagnoses() {
+      return this.attrs.diagnoses || []
+    },
     allergies() {
       return this.attrs.allergies || []
+    },
+    diets() {
+      return this.attrs.diets || []
     },
     fullName() {
       const { first_name, middle_name, last_name } = this.name
@@ -199,6 +249,12 @@ export default {
     },
     hasEmployer() {
       return this.demographics.employer && this.demographics.employer.name
+    }
+  },
+  methods: {
+    formatDate(dateString) {
+      if (!dateString) return 'N/A'
+      return new Date(dateString).toLocaleDateString()
     }
   }
 }
